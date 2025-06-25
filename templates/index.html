@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>📱 Phone Specs Viewer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 2rem;
+            background-color: #f9f9f9;
+        }
+        h1 { color: #333; }
+        form {
+            margin-bottom: 2rem;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+        }
+        th, td {
+            padding: 8px 14px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f0f0f0;
+            text-align: left;
+        }
+        img {
+            max-height: 150px;
+            margin: 10px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📱 Mobile Specs Scraper</h1>
+
+    <form method="post">
+        <input type="text" name="phone_name" placeholder="Enter phone name" required size="40" value="{{ query if query else '' }}">
+        <button type="submit">Search</button>
+    </form>
+
+    {% if data %}
+    <h2>✅ {{ data.name }} ({{ data.provider }})</h2>
+
+    <div>
+        {% for img in data.images %}
+            <img src="{{ img }}" alt="device image">
+        {% endfor %}
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>Specification</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+            {% for key, val in data.specs.items() %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ val }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p>🔗 Source: <a href="{{ data.source }}" target="_blank">{{ data.source }}</a></p>
+    {% endif %}
+</body>
+  </html>
