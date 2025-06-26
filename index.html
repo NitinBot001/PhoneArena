@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Specifications Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .source-select {
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            min-width: 150px;
+        }
+
+        .search-btn, .multiple-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .search-btn:hover, .multiple-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .search-btn:disabled, .multiple-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .multiple-search {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .multiple-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            padding: 40px;
+            display: none;
+        }
+
+        .phone-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 1px solid #e1e5e9;
+        }
+
+        .phone-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .phone-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .phone-brand {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .export-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .phone-content {
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+            flex-wrap: wrap;
+        }
+
+        .phone-images {
+            flex: 0 0 300px;
+            min-width: 250px;
+        }
+
+        .phone-image {
+            width: 100%;
+            height: 400px;
+            object-fit: contain;
+            border-radius: 10px;
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            margin-bottom: 10px;
+        }
+
+        .image-nav {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .image-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-dot.active {
+            background: #667eea;
+        }
+
+        .specs-container {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .specs-table th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 2px solid #e1e5e9;
+            font-size: 16px;
+        }
+
+        .specs-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #e1e5e9;
+            vertical-align: top;
+        }
+
+        .specs-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .spec-category {
+            font-weight: 600;
+            color: #667eea;
+            background: #f0f2ff !important;
+        }
+
+        .spec-key {
+            font-weight: 500;
+            color: #2c3e50;
+            width: 30%;
+        }
+
+        .spec-value {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .success-message {
+            background: #efe;
+            border: 1px solid #cfc;
+            color: #363;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .multiple-results {
+            display: grid;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+            }
+
+            .search-input, .source-select {
+                min-width: 100%;
+            }
+
+            .phone-content {
+                flex-direction: column;
+            }
+
+            .phone-images {
+                flex: none;
+            }
+
+            .phone-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Phone Specifications</h1>
+            <p>Search and compare detailed phone specifications from multiple sources</p>
+        </div>
+
+        <div class="search-section">
+            <div class="search-form">
+                <input type="text" 
+                       class="search-input" 
+                       id="phoneSearch" 
+                       placeholder="Enter phone name (e.g., iPhone 15 Pro, Samsung Galaxy S24)"
+                       onkeypress="handleKeyPress(event)">
+                
+                <select class="source-select" id="sourceSelect">
+                    <option value="gsmarena">GSMArena</option>
+                    <option value="phonedb">PhoneDB</option>
+                </select>
+                
+                <button class="search-btn" onclick="searchPhone()" id="searchBtn">
+                    🔍 Search Phone
+                </button>
+            </div>
+
+            <div class="multiple-search">
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">Search Multiple Phones</h3>
+                <textarea class="multiple-input" 
+                          id="multiplePhones" 
+                          placeholder="Enter phone names, one per line:&#10;iPhone 15 Pro&#10;Samsung Galaxy S24&#10;Google Pixel 8"></textarea>
+                <button class="multiple-btn" onclick="searchMultiplePhones()" id="multipleBt">
+                    🔍 Search Multiple Phones
+                </button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Searching for phone specifications...</p>
+        </div>
+
+        <div class="results-section" id="results">
+            <!-- Results will be populated here -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "https://nitinbot001-phonearena.hf.space/";
+        let currentResults = [];
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchPhone();
+            }
+        }
+
+        async function searchPhone() {
+            const phoneSearching = document.getElementById('phoneSearch').value.trim();
+            const source = document.getElementById('sourceSelect').value;
+            
+            if (!phoneSearching) {
+                showError('Please enter a phone name');
+                return;
+            }
+
+            showLoading(true);
+            hideResults();
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone_name: phoneSearching,
+                        source: source
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    currentResults = [result.data];
+                    displayResults([result.data]);
+                    showSuccess(`Found specifications for ${result.data.name}`);
+                } else {
+                    showError(result.message || 'Phone not found');
+                }
+            } catch (error) {
+                showError('Error searching for phone: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function searchMultiplePhones() {
+            const phonesText = document.getElementById('multiplePhones').value.trim();
+            const source = document.getElementById('sourceSelect').value;
+            
+            if (!phonesText) {
+                showError('Please enter phone names');
+                return;
+            }
+
+            const phoneNames = phonesText.split('\n')
+                .map(name => name.trim())
+                .filter(name => name.length > 0);
+
+            if (phoneNames.length === 0) {
+                showError('Please enter valid phone names');
+                return;
+            }
+
+            showLoading(true);
+            hideResults();
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/search/multiple`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone_names: phoneNames,
+                        source: source
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.phones) {
+                    currentResults = result.data.phones;
+                    displayResults(result.data.phones);
+                    showSuccess(`Found ${result.data.success_count} out of ${result.data.total_count} phones`);
+                } else {
+                    showError(result.message || 'No phones found');
+                }
+            } catch (error) {
+                showError('Error searching for phones: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayResults(phones) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            
+            phones.forEach((phone, index) => {
+                const phoneCard = createPhoneCard(phone, index);
+                resultsDiv.appendChild(phoneCard);
+            });
+            
+            showResults();
+        }
+
+        function createPhoneCard(phone, index) {
+            const card = document.createElement('div');
+            card.className = 'phone-card';
+            
+            const images = phone.images && phone.images.length > 0 ? phone.images : ['/api/placeholder/300/400'];
+            
+            card.innerHTML = `
+                <div class="phone-header">
+                    <div>
+                        <div class="phone-title">${phone.name || 'Unknown Phone'}</div>
+                        <div class="phone-brand">${phone.brand || 'Unknown Brand'}</div>
+                    </div>
+                    <button class="export-btn" onclick="exportPhoneData('${phone.name}')">
+                        📥 Export JSON
+                    </button>
+                </div>
+                <div class="phone-content">
+                    <div class="phone-images">
+                        <img class="phone-image" id="phoneImage${index}" src="${images[0]}" alt="${phone.name}" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDMwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0xMjUgMTc1SDE3NVYyMjVIMTI1VjE3NVoiIGZpbGw9IiNEREREREQiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTkgMTJMMTEgMTRMMTUgMTBNMjEgMTJDMjEgMTYuOTcwNiAxNi45NzA2IDIxIDEyIDIxQzcuMDI5NDQgMjEgMyAxNi45NzA2IDMgMTJDMyA3LjAyOTQ0IDcuMDI5NDQgMyAxMiAzQzE2Ljk3MDYgMyAyMSA3LjAyOTQ0IDIxIDEyWiIgc3Ryb2tlPSIjREREREREIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K'">
+                        ${images.length > 1 ? createImageNavigation(images, index) : ''}
+                    </div>
+                    <div class="specs-container">
+                        ${createSpecsTable(phone.specifications)}
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function createImageNavigation(images, phoneIndex) {
+            const dots = images.map((_, imgIndex) => 
+                `<div class="image-dot ${imgIndex === 0 ? 'active' : ''}" 
+                      onclick="changeImage(${phoneIndex}, ${imgIndex})"></div>`
+            ).join('');
+            
+            return `<div class="image-nav">${dots}</div>`;
+        }
+
+        function changeImage(phoneIndex, imageIndex) {
+            const phone = currentResults[phoneIndex];
+            const imgElement = document.getElementById(`phoneImage${phoneIndex}`);
+            imgElement.src = phone.images[imageIndex];
+            
+            // Update active dot
+            const card = imgElement.closest('.phone-card');
+            const dots = card.querySelectorAll('.image-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === imageIndex);
+            });
+        }
+
+        function createSpecsTable(specs) {
+            if (!specs || typeof specs !== 'object') {
+                return '<p>No specifications available</p>';
+            }
+
+            let tableHTML = '<table class="specs-table"><thead><tr><th colspan="2">Specifications</th></tr></thead><tbody>';
+            
+            Object.entries(specs).forEach(([category, categorySpecs]) => {
+                if (categorySpecs && typeof categorySpecs === 'object') {
+                    // Category header
+                    tableHTML += `<tr class="spec-category"><td colspan="2">${formatCategoryName(category)}</td></tr>`;
+                    
+                    // Category specifications
+                    Object.entries(categorySpecs).forEach(([key, value]) => {
+                        if (value) {
+                            tableHTML += `
+                                <tr>
+                                    <td class="spec-key">${formatSpecName(key)}</td>
+                                    <td class="spec-value">${formatSpecValue(value)}</td>
+                                </tr>
+                            `;
+                        }
+                    });
+                } else if (categorySpecs) {
+                    // Direct specification
+                    tableHTML += `
+                        <tr>
+                            <td class="spec-key">${formatSpecName(category)}</td>
+                            <td class="spec-value">${formatSpecValue(categorySpecs)}</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            tableHTML += '</tbody></table>';
+            return tableHTML;
+        }
+
+        function formatCategoryName(name) {
+            return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function formatSpecName(name) {
+            return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function formatSpecValue(value) {
+            if (Array.isArray(value)) {
+                return value.join(', ');
+            }
+            if (typeof value === 'object') {
+                return JSON.stringify(value, null, 2);
+            }
+            return value.toString();
+        }
+
+        async function exportPhoneData(phoneName) {
+            const source = document.getElementById('sourceSelect').value;
+            try {
+                const response = await fetch(`${API_BASE}/api/export/${encodeURIComponent(phoneName)}?source=${source}`);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${phoneName.replace(/\s+/g, '_')}_specs.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    showSuccess('Phone data exported successfully!');
+                } else {
+                    showError('Failed to export phone data');
+                }
+            } catch (error) {
+                showError('Error exporting phone data: ' + error.message);
+            }
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const searchBtn = document.getElementById('searchBtn');
+            const multipleBtn = document.getElementById('multipleBt');
+            
+            loading.style.display = show ? 'block' : 'none';
+            searchBtn.disabled = show;
+            multipleBtn.disabled = show;
+        }
+
+        function showResults() {
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function hideResults() {
+            document.getElementById('results').style.display = 'none';
+        }
+
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="error-message">❌ ${message}</div>`;
+            showResults();
+        }
+
+        function showSuccess(message) {
+            const resultsDiv = document.getElementById('results');
+            const existingContent = resultsDiv.innerHTML;
+            resultsDiv.innerHTML = `<div class="success-message">✅ ${message}</div>` + existingContent;
+            showResults();
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check API health on load
+            fetch(`${API_BASE}/health`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('API is healthy:', data.data);
+                    }
+                })
+                .catch(error => {
+                    console.error('API health check failed:', error);
+                });
+        });
+    </script>
+</body>
+</html>
